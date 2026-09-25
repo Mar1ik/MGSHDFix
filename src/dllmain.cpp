@@ -10,6 +10,7 @@
 #include "callbacks.hpp"
 #include "d3d11_api.hpp"
 #include "gamevars.hpp"
+#include "input_handler.hpp"
 #include "steamworks_api.hpp"
 #include "version_checking.hpp"
 
@@ -208,16 +209,26 @@ static void Init_Miscellaneous()
 
     if ((eGameType & (MGS2|MGS3)) && bMouseSensitivity)
     {
+        g_InputHandler.SetRawMouseInputEnabled(bRawMouseInput);
+
         // MGS 2 | MGS 3: MouseSensitivity
         uint8_t* MGS3_MouseSensitivityScanResult = Memory::PatternScanSilent(baseModule, "F3 0F 59 43 ?? F3 0F 2C C0 66 0F 6E 43");
         if (MGS3_MouseSensitivityScanResult)
         {
             spdlog::info("MGS 2 | MGS 3: Mouse Sensitivity: Address is {:s}+{:X}", sExeName.c_str(), (uintptr_t)MGS3_MouseSensitivityScanResult - (uintptr_t)baseModule);
+            if (bRawMouseInput)
+            {
+                spdlog::info("MGS 2 | MGS 3: Mouse Sensitivity: Using raw mouse input.");
+            }
 
             static SafetyHookMid MouseSensitivityXMidHook{};
             MouseSensitivityXMidHook = safetyhook::create_mid(MGS3_MouseSensitivityScanResult,
                 [](SafetyHookContext& ctx)
                 {
+                    if (bRawMouseInput)
+                    {
+                        ctx.xmm0.f32[0] = g_InputHandler.ConsumeRawMouseDeltaX();
+                    }
                     ctx.xmm0.f32[0] *= fMouseSensitivityXMulti;
                 });
 
@@ -225,6 +236,10 @@ static void Init_Miscellaneous()
             MouseSensitivityYMidHook = safetyhook::create_mid(MGS3_MouseSensitivityScanResult + 0x2E,
                 [](SafetyHookContext& ctx)
                 {
+                    if (bRawMouseInput)
+                    {
+                        ctx.xmm0.f32[0] = g_InputHandler.ConsumeRawMouseDeltaY();
+                    }
                     ctx.xmm0.f32[0] *= fMouseSensitivityYMulti;
                 });
         }
