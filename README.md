@@ -89,6 +89,7 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 #### MGS3 Specific Features:
 - Option to force grass to render at all distances.
 - Mouse sensitivity adjustment.
+- Optional raw mouse input for camera/aim movement.
 
 <br />
 

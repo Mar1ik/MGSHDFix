@@ -17,6 +17,9 @@ public:
     void RegisterHotkey(int vkCode, const char* name, std::function<void()> callback);
     void RegisterHeldHotkey(int vkCode, const char* name, std::function<void()> callback, DWORD repeatDelayMs = 100);
     void Update();
+    void SetRawMouseInputEnabled(bool enabled);
+    [[nodiscard]] float ConsumeRawMouseDeltaX() const;
+    [[nodiscard]] float ConsumeRawMouseDeltaY() const;
 
     // Reads an INI value, validates & converts aliases to a VK, warns on duplicates, logs resolved name.
     // Fatal-exits on invalid/missing config values (same UX as your ConfigHelper).

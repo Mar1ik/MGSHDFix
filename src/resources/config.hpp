@@ -12,6 +12,7 @@ inline bool bLauncherJumpStart;
 inline int iAnisotropicFiltering;
 inline bool bDisableTextureFiltering;
 inline bool bMouseSensitivity;
+inline bool bRawMouseInput;
 inline float fMouseSensitivityXMulti;
 inline float fMouseSensitivityYMulti;
 inline bool bDisableCursor;

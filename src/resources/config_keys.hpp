@@ -794,6 +794,13 @@ namespace ConfigKeys
                                                              "\n"
                                                              "Higher multipliers produce more sensitivity.";
 
+    constexpr const char* RawMouseInput_Section = "Mouse Sensitivity";
+    constexpr const char* RawMouseInput_Setting = "Use Raw Mouse Input";
+    constexpr const char* RawMouseInput_Help = "";
+    constexpr const char* RawMouseInput_Tooltip = "Uses unaccelerated raw mouse deltas for aiming/camera input.\n"
+                                                   "\n"
+                                                   "Enable this if camera movement feels inconsistent with Windows pointer acceleration.";
+
     constexpr const char* MouseSensitivity_XMultiplier_Section = "Mouse Sensitivity";
     constexpr const char* MouseSensitivity_XMultiplier_Setting = "X Multiplier";
     constexpr const char* MouseSensitivity_XMultiplier_Help = "";

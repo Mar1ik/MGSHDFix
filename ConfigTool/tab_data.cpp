@@ -542,6 +542,9 @@ std::nullopt, false, Field::Int, 100, 1, 100},
         { (MGS2|MGS3), ConfigKeys::OverrideMouseSensitivity_Section, ConfigKeys::OverrideMouseSensitivity_Setting, ConfigKeys::OverrideMouseSensitivity_Help, ConfigKeys::OverrideMouseSensitivity_Tooltip,
           std::nullopt, false, Field::Bool, false },
 
+        { (MGS2|MGS3), ConfigKeys::RawMouseInput_Section, ConfigKeys::RawMouseInput_Setting, ConfigKeys::RawMouseInput_Help, ConfigKeys::RawMouseInput_Tooltip,
+          std::make_pair(ConfigKeys::OverrideMouseSensitivity_Section, ConfigKeys::OverrideMouseSensitivity_Setting), false, Field::Bool, false },
+
         { (MGS2|MGS3), ConfigKeys::MouseSensitivity_XMultiplier_Section, ConfigKeys::MouseSensitivity_XMultiplier_Setting, ConfigKeys::MouseSensitivity_XMultiplier_Help, ConfigKeys::MouseSensitivity_XMultiplier_Tooltip,
           std::make_pair(ConfigKeys::OverrideMouseSensitivity_Section, ConfigKeys::OverrideMouseSensitivity_Setting), false,
           Field::Int, 1, 1, 100 },

@@ -10,6 +10,7 @@
 #include "steamworks_api.hpp"
 
 #include "version.h"
+#include <atomic>
 
 std::unordered_map<int, std::string> InputHandler::s_UsedKeybinds {};
 
@@ -25,6 +26,10 @@ namespace
 
     bool g_WheelUpPressed = false;
     bool g_WheelDownPressed = false;
+    bool g_RawMouseInputEnabled = false;
+    bool g_RawMouseInputRegistered = false;
+    std::atomic<long> g_RawMouseDeltaX = 0;
+    std::atomic<long> g_RawMouseDeltaY = 0;
 
     struct HeldHotkeyState
     {
@@ -52,6 +57,24 @@ namespace
                 g_WheelDownPressed = true;
             }
         }
+        else if (msg == WM_INPUT && g_RawMouseInputEnabled)
+        {
+            UINT rawInputDataSize = 0;
+            if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &rawInputDataSize, sizeof(RAWINPUTHEADER)) == 0 && rawInputDataSize > 0)
+            {
+                std::vector<BYTE> rawInputData(rawInputDataSize);
+                if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawInputData.data(), &rawInputDataSize, sizeof(RAWINPUTHEADER)) == rawInputDataSize)
+                {
+                    const RAWINPUT* rawInput = reinterpret_cast<const RAWINPUT*>(rawInputData.data());
+                    if (rawInput->header.dwType == RIM_TYPEMOUSE &&
+                        (rawInput->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == 0)
+                    {
+                        g_RawMouseDeltaX.fetch_add(rawInput->data.mouse.lLastX, std::memory_order_relaxed);
+                        g_RawMouseDeltaY.fetch_add(rawInput->data.mouse.lLastY, std::memory_order_relaxed);
+                    }
+                }
+            }
+        }
 
         return CallWindowProc(g_InputHandlerOriginalWndProc, hwnd, msg, wParam, lParam);
     }
@@ -70,6 +93,29 @@ namespace
 
         g_InputHandlerOriginalWndProc = reinterpret_cast<WNDPROC>(
             SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(InputHandlerWndProc)));
+    }
+
+    void InstallRawMouseCapture(HWND hwnd)
+    {
+        if (!g_RawMouseInputEnabled || g_RawMouseInputRegistered || hwnd == nullptr)
+        {
+            return;
+        }
+
+        RAWINPUTDEVICE rawInputDevice = {};
+        rawInputDevice.usUsagePage = 0x01;
+        rawInputDevice.usUsage = 0x02;
+        rawInputDevice.dwFlags = g_InputHandler.bCaptureInputsWhileAltTabbed ? RIDEV_INPUTSINK : 0;
+        rawInputDevice.hwndTarget = hwnd;
+
+        if (RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice)) == FALSE)
+        {
+            spdlog::error("InputHandler: Failed to register raw mouse input. Error code: {}", GetLastError());
+            return;
+        }
+
+        g_RawMouseInputRegistered = true;
+        spdlog::info("InputHandler: Raw mouse input enabled.");
     }
 
     bool IsGamepadButtonDown(const XINPUT_GAMEPAD& pad, int vkCode)
@@ -648,6 +694,7 @@ void InputHandler::Update()
     }
 
     InstallMouseWheelCapture(g_D3D11Hooks.MainHwnd);
+    InstallRawMouseCapture(g_D3D11Hooks.MainHwnd);
     EnsureHeldHotkeyStateCount(hotkeys.size());
 
     const ULONGLONG currentTick = GetTickCount64();
@@ -736,6 +783,23 @@ void InputHandler::Update()
 
     g_WheelUpPressed = false;
     g_WheelDownPressed = false;
+}
+
+void InputHandler::SetRawMouseInputEnabled(bool enabled)
+{
+    g_RawMouseInputEnabled = enabled;
+    g_RawMouseDeltaX.store(0, std::memory_order_relaxed);
+    g_RawMouseDeltaY.store(0, std::memory_order_relaxed);
+}
+
+float InputHandler::ConsumeRawMouseDeltaX() const
+{
+    return static_cast<float>(g_RawMouseDeltaX.exchange(0, std::memory_order_relaxed));
+}
+
+float InputHandler::ConsumeRawMouseDeltaY() const
+{
+    return static_cast<float>(g_RawMouseDeltaY.exchange(0, std::memory_order_relaxed));
 }
 
 void InputHandler::GetKeybind(const inipp::Ini<char>& ini,

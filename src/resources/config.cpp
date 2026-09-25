@@ -647,9 +647,11 @@ void Config::Read()
     LOG_CONFIG(ConfigKeys::MGS2Sunglasses_Section, ConfigKeys::MGS2Sunglasses_Setting, sShouldWearSunglasses);
 
     ConfigHelper::getValue(ini, ConfigKeys::OverrideMouseSensitivity_Section, ConfigKeys::OverrideMouseSensitivity_Setting, bMouseSensitivity);
+    ConfigHelper::getValue(ini, ConfigKeys::RawMouseInput_Section, ConfigKeys::RawMouseInput_Setting, bRawMouseInput);
     ConfigHelper::getValue(ini, ConfigKeys::MouseSensitivity_XMultiplier_Section, ConfigKeys::MouseSensitivity_XMultiplier_Setting, fMouseSensitivityXMulti);
     ConfigHelper::getValue(ini, ConfigKeys::MouseSensitivity_YMultiplier_Section, ConfigKeys::MouseSensitivity_YMultiplier_Setting, fMouseSensitivityYMulti);
     LOG_CONFIG(ConfigKeys::OverrideMouseSensitivity_Section, ConfigKeys::OverrideMouseSensitivity_Setting, bMouseSensitivity);
+    LOG_CONFIG(ConfigKeys::RawMouseInput_Section, ConfigKeys::RawMouseInput_Setting, bRawMouseInput);
     LOG_CONFIG(ConfigKeys::MouseSensitivity_XMultiplier_Section, ConfigKeys::MouseSensitivity_XMultiplier_Setting, fMouseSensitivityXMulti);
     LOG_CONFIG(ConfigKeys::MouseSensitivity_YMultiplier_Section, ConfigKeys::MouseSensitivity_YMultiplier_Setting, fMouseSensitivityYMulti);
 
